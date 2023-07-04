@@ -5,27 +5,30 @@ Read at least the first 2 parts of this tutorial series:
 
 # Setup / Installation
 
-## Requirements
-Docker
-canutils
-python-can
-
-## First Use
+Run 
+```shell
+$ chmod +x install
+$ ./install
+```
 
 # Usage
 Run `python3 vcs_vehicle_hacking.py`
 
 ## Root access
-The Python interface requires sudo access to run docker commands in the background. This may result in a prompt for you password during execution.
+The Python interface requires sudo access to run docker commands in the background. This may result in a prompt for your password during execution.
 
 The training will not function properly without this access.
 
-# Useful (if not required) tools to have and know for the training
-canutils
+# Useful tools to have and know for the training
 jadx or jd-gui
+recaf
 javac
 file
 binwalk
+7z
+can-utils
 
 # Known Issues
-On first run of each mission, the Docker container will be built. This can take quite a while. After running the first time, it should be faster.
+During mission 3, their is sometimes a bug where the network times out and will not reconnect. Restart the program with <CTRL>+C if this occurs.
+
+On first run of each mission, the Docker container will be built. This can take quite a while, particularly on mission1. After running the first time, it should be faster.
