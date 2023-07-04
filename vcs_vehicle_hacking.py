@@ -144,7 +144,7 @@ class Mission2(Mission):
 
         print(f"{Fore.GREEN}Firmware successfully uploaded")
         print(f"{Style.BRIGHT}Attempting to execute firmware...")
-        docker_proc = subprocess.Popen(['sudo', 'docker', 'run', '--rm', '-p', '127.0.0.1:5555:5555/tcp', '--name', 'mission2', 'cantrain/m2'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        docker_proc = subprocess.Popen(['sudo', 'docker', 'run', '--rm', '-p', '127.0.0.1:5555:5555/tcp', '-p', '127.0.0.1:5000:5000/udp', '--name', 'mission2', 'cantrain/m2'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         success = self.wait_for_tcp()
         subprocess.call(['sudo', 'docker', 'kill', 'mission2'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -161,8 +161,26 @@ class Mission2(Mission):
         if not connected:
             print(f"{Style.BRIGHT}{Fore.RED}MISSION FAILED: The firmware was executed but no backdoor appeared.")
             return Events.MAIN_MENU
-        print(f"{Style.BRIGHT}{Fore.GREEN}MISSION SUCCESS: The firmware you uploaded spawned a backdoor server. Good work!")
-        return Events.NEXT_MISSION
+
+        received = self.wait_for_can(sock)
+        if received:
+            print(f"{Style.BRIGHT}{Fore.GREEN}MISSION SUCCESS: The firmware you uploaded spawned a backdoor server. Good work!")
+            return Events.NEXT_MISSION
+        else:
+            print(f"{Style.BRIGHT}{Fore.RED}MISSION FAILED: The firmware was executed but no backdoor appeared.")
+            return Events.MAIN_MENU
+
+    def wait_for_can(self, sock):
+        udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        udp_addr = ('127.0.0.1', 5000)
+        udp_sock.connect(udp_addr)
+
+        udp_sock.send(b'123#1234')
+
+        # Verify the message was received
+        data = sock.recv(1024)
+        if 'can0' in data.decode('utf-8'):
+            return True
 
     def connect_to_socket(self, sock, addr):
         for i in range(3):

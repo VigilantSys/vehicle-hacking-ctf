@@ -14,5 +14,6 @@ FROM openjdk:17
 COPY --from=builder ./firmware.jar ./
 
 EXPOSE 5555/tcp
+EXPOSE 5000/udp
 
 CMD java -jar firmware.jar > /dev/null
