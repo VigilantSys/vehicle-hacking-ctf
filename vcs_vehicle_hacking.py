@@ -231,7 +231,6 @@ class Mission3(Mission):
                 try:
                     data = sock.recv(1).decode('utf-8')
                     if data == '':
-                        print('No data')
                         self.reconnect(sock, server_address)
                         connection_broken = True
                         break
@@ -283,7 +282,7 @@ class Mission3(Mission):
             print(f"{Style.BRIGHT}{Fore.RED}MISSION FAILED:{Style.NORMAL} The car shifted into park in the wrong location. The target slipped away before our agents could arrive.")
             return Events.MAIN_MENU
 
-        print(f"{Fore.GREEN}The Vehicle was stopped while going {self.state['prev_speed']:0.2f} at {self.state['lat']},{self.state['lon']}. Our agents were able to take the target into custody!")
+        print(f"{Fore.GREEN}The Vehicle was stopped while going {self.state['prev_speed']:0.2f} mph at {self.state['lat']},{self.state['lon']}. Our agents were able to take the target into custody!")
         return Events.VICTORY 
 
     def in_range(self, lat, lon):
@@ -473,7 +472,7 @@ class Game():
             return
         elif self.state == Events.VICTORY:
             print(f"{Style.BRIGHT}{Fore.GREEN}Congratulations on completing the Vigilant Cyber Systems Vehicle Hacking Training Program!")
-            self.state = Events.MAIN_MENU
+            self.state = Events.QUIT
         else:
             print(f"{Style.BRIGHT}{Fore.RED}Error occurred: Invalid state")
             return

@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# Analyzing the roylls_roce_ghoul_vii_firmware_update_2018
+
+## Start by trying to figure out what type of file this is
+## Easiest way is to run `file roylls_roce_ghoul_vii_firmware_update_2018`
+## The result of the file command shows us that this is a CD-ROM, which likely means it is an .iso
+
+# Extracting files from the .iso
+## There are several ways to extract the files
+## We could mount it
+## We could run binwalk -e
+## We could run 7z -x
+
+binwalk -e ../mission2/roylls_roce_ghoul_vii_firmware_update_2018
+
+# Analyzing the extracted files
+
+## There are 2 files in the extracted ISO: MANIFEST.TXT and FIRMWARE
+
+## Viewing the contents of MANIFEST.TXT shows us a hash of a file called firmware.jar
+## You may want to check what type of hash this is in an online hashchecker or using hash-identifier
+## It turns out it is a SHA-1 hash
+## Let's go ahead and see if this hash matches our FIRMWARE file by running sha1sum FIRMWARE
+## The hashes don't match
+
+## Once again, running the file command on the FIRMWARE file will give us our next step
+## It tells us that this is .jar file with extra data prepended
+## Perhaps the firmware.jar file is contained within the data
+## To view the contents of the file, let's use `xxd FIRMWARE |less`
+## This shows there is a comment prepended to the binary data
+## We can strip this comment off using the tail command
+
+tail -c +309 _roylls_roce_ghoul_vii_firmware_update_2018.extracted/iso-root/FIRMWARE > firmware.jar
+
+## Now we can compare the hashes with this file with `sha1sum firmware.jar`
+## They match!
+
+# Reverse engineering the jar file
+
+## There are several ways we could do this including manually patching the binary .class files within the JAR
+## But probably the easiest way is to use a Jar patching application like recaf
+## We can use this to decompile the Java classes within the JAR and make modifications to them before patching
+## In the decompiled code we can see that when the application starts, it checks a configuration value named "debug"
+## If this value is set to true, it enables 2 servers that send and receive CAN data
+## This must be the backdoor the level was talking about
+## Use recaf to set this value to true
+
+echo "Change debug to true, and save the JAR to firmware.jar"
+java -jar recaf-2.21.13-J8-jar-with-dependencies.jar --input=firmware.jar
+
+# Repackaging
+
+## First, let's make sure our checksums match
+
+mkdir repack
+sha1sum firmware.jar > repack/MANIFEST.TXT
+
+## Now let's add the comment back to the top of firmware.jar
+## Make sure you properly handle the new line character 0x0a
+
+head -c 308 _roylls_roce_ghoul_vii_firmware_update_2018.extracted/iso-root/FIRMWARE > comment.txt
+cat comment.txt firmware.jar > repack/FIRMWARE
+
+## Finally, let's repackage everything into an ISO file
+
+mkisofs -o roylls_roce_ghoul_vii_firmware_update_2018 ./repack/
+
+# Upload to infotainment system
+
+## For this we just need to copy the file into the USB folder
+
+mv roylls_roce_ghoul_vii_firmware_update_2018 ../mission2/USB/
+
+echo "Type y and enter in the Python interface"
+
+# Clean up
+
+rm firmware.jar
+rm comment.txt
+rm -r _roylls_roce_ghoul_vii_firmware_update_2018.extracted/
+rm -r repack
