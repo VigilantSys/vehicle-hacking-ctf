@@ -1,0 +1,8 @@
+FROM rust:1.67
+
+COPY ./setup/mission1/roylls_roce_ghoul.dbc ./
+
+RUN rustup toolchain install nightly && \
+    cargo +nightly install --examples canutils
+
+CMD cangenrb -i roylls_roce_ghoul.dbc vcan0 > /dev/null
