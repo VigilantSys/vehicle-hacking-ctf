@@ -257,7 +257,7 @@ class Mission3(Mission):
         while True:
             try:
                 #set_keepalive_linux(sock)
-                sock.settimeout(1.5)
+                sock.settimeout(2)
                 sock.connect(addr)
                 # Keep socket open
                 #sock.sendall(b'EHLO')
