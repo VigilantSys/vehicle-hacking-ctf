@@ -23,6 +23,7 @@ public class Connection implements Runnable {
 
     public void send(String message) throws IOException {
         if (this.socket.isClosed()) {
+            this.close();
             throw new IOException("Client socket is closed", null);
         }
         synchronized (this.queue) {
@@ -57,10 +58,10 @@ public class Connection implements Runnable {
                 this.sendTCP(message);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                break;
+                continue;
             } catch (IOException e) {
                 e.printStackTrace();
-                break;
+                continue;
             }
         }
     }

@@ -1,0 +1,7 @@
+netcat localhost 5555 >/dev/null &  # port 12345
+exec 6<>/dev/tcp/localhost/5555
+
+while read <&6
+do
+        echo "$REPLY" | grep 1A3 | cut -d "	" -f 4
+done
