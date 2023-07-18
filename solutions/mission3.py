@@ -10,6 +10,29 @@ def parse_can(line):
     data_bytes = bytearray.fromhex(''.join(data_parts))
     return arb, data_bytes
 
+def get_next_line(sock):
+    line = ''
+    data = ''
+    while data != '\n':
+        line += data
+        data = sock.recv(1).decode('utf-8')
+    return line
+
+def calc_distance(p1, p2):
+    (x1, y1) = p1
+    (x2, y2) = p2
+    return math.sqrt( (x2 - x1)**2 + (y2 - y1)**2 )
+
+def check_conditions(lat, lon, speed):
+    distance = calc_distance( (lat, lon), (48.87378, 2.29497) ) 
+    print(f"Distance: {distance}")
+
+    return distance < 0.001 and speed < 15.0
+
+def send_park(sock):
+    message = '1a2#000000000000'
+    sock.send(message.encode('utf-8'))
+
 def main():
     # Initialize tcp
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,34 +52,31 @@ def main():
 
     while True:
         # Get CAN message
-        line = ''
-        data = ''
-        while data != '\n':
-            line += data
-            data = sock.recv(1).decode('utf-8')
-
+        line = get_next_line(sock)
         arb, data = parse_can(line)
 
+        # Handle Messages
+
+        # Latitude
         if arb == '01A3':
             lat = struct.unpack('<d', data)[0]
             print(f"Lat: {lat}")
+        # Longitude
         elif arb == '01A4':
             lon = struct.unpack('<d', data)[0]
             print(f"Lon: {lon}")
+        # Speed
         elif arb == '01A2':
             speed = int.from_bytes(data[:4], 'little') / 100.0
             print(f"Speed: {speed}")
 
-        distance = math.sqrt( (48.87378 - lat)**2 + (2.29497 - lon)**2 )
-        print(f"Distance: {distance}")
-
-        if distance < 0.001 and speed < 15.0:
+        if check_conditions(lat, lon, speed):
             break
 
-    message = '1a2#000000000000'
-    udp_sock.send(message.encode('utf-8'))
+    # Put car into park
+    send_park(udp_sock)
 
-
+    # Clean up
     sock.close()
     udp_sock.close()
 
