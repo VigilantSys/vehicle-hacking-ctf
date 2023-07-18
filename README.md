@@ -31,7 +31,7 @@ On first run of each mission, the Docker container will be built. This can take 
 This program has only been tested on 2021-2023 Kali Linux 
 
 # Resources
-[Car Hacking 101](https://medium.com/@yogeshojha/car-hacking-101-practical-guide-to-exploiting-can-bus-using-instrument-cluster-simulator-part-i-cd88d3eb4a53)
+[Car Hacking 101](https://medium.com/@yogeshojha/car-hacking-101-practical-guide-to-exploiting-can-bus-using-instrument-cluster-simulator-part-i-cd88d3eb4a53) <br>
 [Recaf](https://www.coley.software/Recaf/)
 
 
